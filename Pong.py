@@ -2,6 +2,7 @@
 
 import simplegui
 import random
+import math
 
 # initialize globals - pos and vel encode vertical info for paddles
 # Table Information
@@ -34,12 +35,13 @@ score2 = 0
 # initialize ball_pos and ball_vel for new bal in middle of table
 # if direction is RIGHT, the ball's velocity is upper right, else upper left
 def spawn_ball(direction):
-    global ball_pos, ball_vel # these are vectors stored as lists
+    global ball_pos, ball_vel, ball_acc# these are vectors stored as lists
     ball_pos = list(INITIAL_BALL_POSITION)
+    ball_acc = 0
     if direction:
-        ball_vel = [1, -1]
+        ball_vel = [1, 2*random.random()-1]
     else:
-        ball_vel = [-1, -1]
+        ball_vel = [-1, 2*random.random()-1]
 
 # define event handlers
 def new_game():
@@ -58,8 +60,8 @@ def draw(canvas):
     canvas.draw_line([WIDTH - PAD_WIDTH, 0],[WIDTH - PAD_WIDTH, HEIGHT], 1, "White")
     
     # update ball
-    ball_pos[0] = ball_pos[0] + ball_acc*ball_vel[0]
-    ball_pos[1] = ball_pos[1] + ball_acc*ball_vel[1]
+    ball_pos[0] = ball_pos[0] + math.sqrt(ball_acc) * ball_vel[0]
+    ball_pos[1] = ball_pos[1] + math.sqrt(ball_acc) * ball_vel[1]
     
     #print ball_pos
     canvas.draw_circle(ball_pos, BALL_RADIUS, 2, "Red", "White")       
@@ -85,8 +87,20 @@ def draw(canvas):
 
     # determine whether paddle and ball collide    
     # ball collide
-    if ball_pos[0] < BALL_RADIUS or ball_pos[0] > WIDTH - BALL_RADIUS:
-        ball_vel[0] = - ball_vel[0]
+    if ball_pos[0] < BALL_RADIUS + PAD_WIDTH:
+        if ball_pos[1] > paddle1_pos[0] and ball_pos[1] < paddle1_pos[1] :
+            ball_vel[0] = - ball_vel[0]
+            print ball_pos[1]
+            print paddle1_pos
+        else:
+            score2 += 1
+            spawn_ball(LEFT)
+    if ball_pos[0] > WIDTH - BALL_RADIUS - PAD_WIDTH:
+        if ball_pos[1] > paddle2_pos[0] and ball_pos[1] < paddle2_pos[1] :
+            ball_vel[0] = - ball_vel[0]
+        else:
+            score1 += 1
+            spawn_ball(RIGHT)
     if ball_pos[1] < BALL_RADIUS or ball_pos[1] > HEIGHT - BALL_RADIUS:
         ball_vel[1] = - ball_vel[1]
     # paddle collide    
